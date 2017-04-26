@@ -69,6 +69,37 @@ import 'rc-swipeout/assets/index.less';
 
 ```
 
+Custom button nodes
+
+```js
+import Swipeout from 'rc-swipeout';
+import 'rc-swipeout/assets/index.less';
+
+<Swipeout
+  left={[
+    {
+      button: <div className='button-positive'>reply</div>,
+      onPress:() => console.log('reply'),
+      style: { backgroundColor: 'orange', color: 'white' },
+      className: 'custom-class-1'
+    }
+  ]}
+  right={[
+    {
+      button: <div className='button-warning'>delete</div>,
+      onPress:() => console.log('delete'),
+      style: { backgroundColor: 'red', color: 'white' },
+      className: 'custom-class-2'
+    }
+  ]}
+  onOpen={() => console.log('open')}
+  onClose={() => console.log('close')}
+>
+  <div style={{height: 44}}> swipeout demo </div>
+</Swipeout>
+
+```
+
 For the React Native version, use the following import statement.
 
 ```js
@@ -98,6 +129,7 @@ import Swipeout from 'rc-swipeout/lib'
 | style       | button style     | Object | `` |
 | onPress       | button press function      | Function | `function() {}` |
 | className       | button custom class     | String | `` |
+| button       | button element     | ReactElement | `none` |
 
 ## Test Case
 

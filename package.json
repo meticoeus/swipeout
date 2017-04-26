@@ -29,6 +29,7 @@
   },
   "scripts": {
     "build": "rc-tools run build",
+    "watch": "rc-tools run watch",
     "gh-pages": "rc-tools run gh-pages",
     "start": "rc-tools run server",
     "pub": "rc-tools run pub --babel-runtime",

@@ -185,7 +185,11 @@ class Swipeout extends React.Component {
               style={btn.style}
               onClick={(e) => this.onBtnClick(e, btn)}
             >
-              <div className={`${prefixCls}-text`}>{btn.text || 'Click'}</div>
+              {btn.button ? btn.button :
+                <div className={`${prefixCls}-text`}>
+                  {btn.text || 'Click'}
+                </div>
+              }
             </div>
           );
         })}
