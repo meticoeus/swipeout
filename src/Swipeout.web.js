@@ -28,6 +28,7 @@ class Swipeout extends React.Component {
   constructor(props) {
     super(props);
 
+    this.handleClickContent = this.handleClickContent.bind(this);
     this.onPanStart = this.onPanStart.bind(this);
     this.onPan = this.onPan.bind(this);
     this.onPanEnd = this.onPanEnd.bind(this);
@@ -126,6 +127,12 @@ class Swipeout extends React.Component {
     }
   }
 
+  handleClickContent() {
+    if (this.openedLeft || this.openedRight) {
+      this.close();
+    }
+  }
+
   _getContentEasing(value, limit) {
     // limit content style left when value > actions width
     if (value < 0 && value < limit) {
@@ -212,7 +219,7 @@ class Swipeout extends React.Component {
     return (left.length || right.length) ? (
       <div className={`${prefixCls}`} {...divProps}>
         {/* 保证 body touchStart 后不触发 pan */}
-        <div className={`${prefixCls}-cover`} ref="cover" />
+        <div className={`${prefixCls}-cover`} ref="cover" onClick={this.handleClickContent} />
         { this.renderButtons(left, 'left') }
         { this.renderButtons(right, 'right') }
         <Hammer
