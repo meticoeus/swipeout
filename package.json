@@ -29,6 +29,7 @@
   },
   "scripts": {
     "build": "rc-tools run build",
+    "compile": "rc-tools run compile",
     "gh-pages": "rc-tools run gh-pages",
     "start": "rc-tools run server",
     "pub": "rc-tools run pub --babel-runtime",
@@ -42,7 +43,7 @@
   "dependencies": {
     "babel-runtime": "6.x",
     "object.omit": "~2.0.0",
-    "prop-types": "^15.5.10",
+    "prop-types": "^15.6.2",
     "rc-hammerjs": "^0.6.6",
     "react-native-swipeout": "~2.1.1"
   },

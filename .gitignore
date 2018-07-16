@@ -21,7 +21,6 @@ Thumbs.db
 node_modules
 dist
 build
-lib
 coverage
 ios
 android

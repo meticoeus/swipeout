@@ -73,7 +73,7 @@ class Swipeout extends React.Component {
       return this.renderCustomButton(btn);
     });
 
-    return (left.length || right.length) ? (
+    return (left.length || right.length) && !disabled ? (
       <Swipe
         autoClose={autoClose}
         left={customLeft}
@@ -81,7 +81,6 @@ class Swipeout extends React.Component {
         style={style}
         onOpen={onOpen}
         onClose={onClose}
-        disabled={disabled}
       >
         {children}
       </Swipe>

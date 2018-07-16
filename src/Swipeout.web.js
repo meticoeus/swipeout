@@ -31,9 +31,14 @@ class Swipeout extends React.Component {
   constructor(props) {
     super(props);
 
+    this.handleClickContent = this.handleClickContent.bind(this);
     this.onPanStart = this.onPanStart.bind(this);
     this.onPan = this.onPan.bind(this);
     this.onPanEnd = this.onPanEnd.bind(this);
+    this.setContentRef = this.setContentRef.bind(this);
+    this.setCoverRef = this.setCoverRef.bind(this);
+    this.setLeftRef = this.setLeftRef.bind(this);
+    this.setRightRef = this.setRightRef.bind(this);
 
     this.openedLeft = false;
     this.openedRight = false;
@@ -129,6 +134,28 @@ class Swipeout extends React.Component {
     }
   }
 
+  setContentRef(el) {
+    this.content = el;
+  }
+
+  setCoverRef(el) {
+    this.cover = el;
+  }
+
+  setLeftRef(el) {
+    this.left = el;
+  }
+
+  setRightRef(el) {
+    this.right = el;
+  }
+
+  handleClickContent() {
+    if (this.openedLeft || this.openedRight) {
+      this.close();
+    }
+  }
+
   _getContentEasing(value, limit) {
     // limit content style left when value > actions width
     if (value < 0 && value < limit) {
@@ -141,19 +168,22 @@ class Swipeout extends React.Component {
 
   // set content & actions style
   _setStyle(value) {
+    if (!this.content || !this.cover) {
+      return;
+    }
     const { left, right } = this.props;
     const limit = value > 0 ? this.btnsLeftWidth : -this.btnsRightWidth;
     const contentLeft = this._getContentEasing(value, limit);
     this.content.style.left = `${contentLeft}px`;
-    this.refs.cover.style.display = Math.abs(value) > 0 ? 'block' : 'none';
-    this.refs.cover.style.left = `${contentLeft}px`;
-    if (left.length) {
+    this.cover.style.display = Math.abs(value) > 0 ? 'block' : 'none';
+    this.cover.style.left = `${contentLeft}px`;
+    if (left.length && this.left) {
       const leftWidth = Math.max(Math.min(value, Math.abs(limit)), 0);
-      this.refs.left.style.width = `${leftWidth}px`;
+      this.left.style.width = `${leftWidth}px`;
     }
-    if (right.length) {
+    if (right.length && this.right) {
       const rightWidth = Math.max(Math.min(-value, Math.abs(limit)), 0);
-      this.refs.right.style.width = `${rightWidth}px`;
+      this.right.style.width = `${rightWidth}px`;
     }
   }
 
@@ -189,7 +219,11 @@ class Swipeout extends React.Component {
               role="button"
               onClick={(e) => this.onBtnClick(e, btn)}
             >
-              <div className={`${prefixCls}-text`}>{btn.text || 'Click'}</div>
+              {btn.button ? btn.button :
+                <div className={`${prefixCls}-text`}>
+                  {btn.text || 'Click'}
+                </div>
+              }
             </div>
           );
         })}
@@ -208,27 +242,26 @@ class Swipeout extends React.Component {
       'onOpen',
       'onClose',
     ]);
-    const refProps = {
-      ref: el => this.content = ReactDOM.findDOMNode(el),
-    };
     return (left.length || right.length) ? (
       <div className={`${prefixCls}`} {...divProps}>
         {/* 保证 body touchStart 后不触发 pan */}
-        <div className={`${prefixCls}-cover`} ref="cover" />
-        { this.renderButtons(left, 'left') }
-        { this.renderButtons(right, 'right') }
+        <div className={`${prefixCls}-cover`} ref={this.setCoverRef} onClick={this.handleClickContent} />
+        { this.renderButtons(left, this.setLeftRef) }
+        { this.renderButtons(right, this.setRightRef) }
         <Hammer
           direction="DIRECTION_HORIZONTAL"
           onPanStart={this.onPanStart}
           onPan={this.onPan}
           onPanEnd={this.onPanEnd}
-          {...refProps}
+          ref={this.setContentRef}
         >
-          <div className={`${prefixCls}-content`}>{children}</div>
+          <div className={`${prefixCls}-content`}>
+            {children}
+          </div>
         </Hammer>
       </div>
     ) : (
-      <div {...refProps} {...divProps}>{children}</div>
+      <div ref={this.setContentRef} {...divProps}>{children}</div>
     );
   }
 }
