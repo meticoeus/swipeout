@@ -1,4 +1,5 @@
-import React, { PropTypes } from 'react';
+import React from 'react';
+import PropTypes from 'prop-types';
 import Hammer from 'react-hammerjs';
 import omit from 'object.omit';
 import splitObject from './util/splitObject';
