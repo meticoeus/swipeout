@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import ReactDOM from 'react-dom';
 import Hammer from 'rc-hammerjs';
 import omit from 'object.omit';
 import splitObject from './util/splitObject';
@@ -31,31 +30,26 @@ class Swipeout extends React.Component {
   constructor(props) {
     super(props);
 
+    this.state = {
+      contentStyle: {
+        left: 0,
+      },
+      coverStyle: {
+        left: 0,
+      },
+    };
+
     this.handleClickContent = this.handleClickContent.bind(this);
     this.onPanStart = this.onPanStart.bind(this);
     this.onPan = this.onPan.bind(this);
     this.onPanEnd = this.onPanEnd.bind(this);
     this.setContentRef = this.setContentRef.bind(this);
-    this.setCoverRef = this.setCoverRef.bind(this);
-    this.setLeftRef = this.setLeftRef.bind(this);
-    this.setRightRef = this.setRightRef.bind(this);
 
     this.openedLeft = false;
     this.openedRight = false;
   }
 
   componentDidMount() {
-    const { left, right } = this.props;
-    const width = this.content.offsetWidth;
-
-    if (this.refs.cover) {
-      this.refs.cover.style.width = `${width}px`;
-    }
-
-    this.contentWidth = width;
-    this.btnsLeftWidth = (width / 5) * left.length;
-    this.btnsRightWidth = (width / 5) * right.length;
-
     document.body.addEventListener('touchstart', this.onCloseSwipe.bind(this), true);
   }
 
@@ -84,6 +78,12 @@ class Swipeout extends React.Component {
     if (this.props.disabled) {
       return;
     }
+    const { left, right } = this.props;
+    const width = this.content.offsetWidth;
+
+    this.contentWidth = width;
+    this.btnsLeftWidth = (width / 5) * left.length;
+    this.btnsRightWidth = (width / 5) * right.length;
     this.panStartX = e.deltaX;
   }
 
@@ -138,20 +138,9 @@ class Swipeout extends React.Component {
     this.content = el;
   }
 
-  setCoverRef(el) {
-    this.cover = el;
-  }
-
-  setLeftRef(el) {
-    this.left = el;
-  }
-
-  setRightRef(el) {
-    this.right = el;
-  }
-
-  handleClickContent() {
+  handleClickContent(e) {
     if (this.openedLeft || this.openedRight) {
+      e.stopPropagation();
       this.close();
     }
   }
@@ -162,29 +151,52 @@ class Swipeout extends React.Component {
       return limit - Math.pow(limit - value, 0.85);
     } else if (value > 0 && value > limit) {
       return limit + Math.pow(value - limit, 0.85);
+    } else {
+      return value;
     }
-    return value;
   }
 
   // set content & actions style
   _setStyle(value) {
-    if (!this.content || !this.cover) {
+    if (!this.content) {
       return;
     }
+
+    const nextState = {};
     const { left, right } = this.props;
-    const limit = value > 0 ? this.btnsLeftWidth : -this.btnsRightWidth;
+    const width = this.content.offsetWidth;
+
+    this.contentWidth = width;
+    this.btnsLeftWidth = (width / 5) * left.length;
+    this.btnsRightWidth = (width / 5) * right.length;
+
+    const limit = value === 0 ? 0 : (value > 0 ? this.btnsLeftWidth : -this.btnsRightWidth);
     const contentLeft = this._getContentEasing(value, limit);
-    this.content.style.left = `${contentLeft}px`;
-    this.cover.style.display = Math.abs(value) > 0 ? 'block' : 'none';
-    this.cover.style.left = `${contentLeft}px`;
-    if (left.length && this.left) {
+
+    nextState.contentStyle = {
+      left: `${contentLeft}px`,
+    };
+    nextState.coverStyle = {
+      display: Math.abs(value) > 0 ? 'block' : 'none',
+      width: `${width}px`,
+      left: `${contentLeft}px`,
+    };
+
+    if (left.length) {
       const leftWidth = Math.max(Math.min(value, Math.abs(limit)), 0);
-      this.left.style.width = `${leftWidth}px`;
+      nextState.leftStyle = {
+        width: `${leftWidth}px`,
+      };
     }
-    if (right.length && this.right) {
+    if (right.length) {
+
       const rightWidth = Math.max(Math.min(-value, Math.abs(limit)), 0);
-      this.right.style.width = `${rightWidth}px`;
+      nextState.rightStyle = {
+        width: `${rightWidth}px`,
+      };
     }
+
+    this.setState(nextState);
   }
 
   open(value, openedLeft, openedRight) {
@@ -206,11 +218,11 @@ class Swipeout extends React.Component {
     this.openedRight = false;
   }
 
-  renderButtons(buttons, ref) {
+  renderButtons(buttons, name, style) {
     const prefixCls = this.props.prefixCls;
 
     return (buttons && buttons.length) ? (
-      <div className={`${prefixCls}-actions ${prefixCls}-actions-${ref}`} ref={ref}>
+      <div className={`${prefixCls}-actions ${prefixCls}-actions-${name}`} style={style}>
         {buttons.map((btn, i) => {
           return (
             <div key={i}
@@ -245,17 +257,16 @@ class Swipeout extends React.Component {
     return (left.length || right.length) ? (
       <div className={`${prefixCls}`} {...divProps}>
         {/* 保证 body touchStart 后不触发 pan */}
-        <div className={`${prefixCls}-cover`} ref={this.setCoverRef} onClick={this.handleClickContent} />
-        { this.renderButtons(left, this.setLeftRef) }
-        { this.renderButtons(right, this.setRightRef) }
+        <div className={`${prefixCls}-cover`} onClick={this.handleClickContent} style={this.state.coverStyle} />
+        { this.renderButtons(left, 'left', this.state.leftStyle) }
+        { this.renderButtons(right, 'right', this.state.rightStyle) }
         <Hammer
           direction="DIRECTION_HORIZONTAL"
           onPanStart={this.onPanStart}
           onPan={this.onPan}
           onPanEnd={this.onPanEnd}
-          ref={this.setContentRef}
         >
-          <div className={`${prefixCls}-content`}>
+          <div className={`${prefixCls}-content`} ref={this.setContentRef} style={this.state.contentStyle}>
             {children}
           </div>
         </Hammer>
