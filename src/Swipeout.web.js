@@ -1,6 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Hammer from 'react-hammerjs';
+
+import ReactDOM from 'react-dom';
+import Hammer from 'rc-hammerjs';
 import omit from 'object.omit';
 import splitObject from './util/splitObject';
 
@@ -33,6 +35,10 @@ class Swipeout extends React.Component {
     this.onPanStart = this.onPanStart.bind(this);
     this.onPan = this.onPan.bind(this);
     this.onPanEnd = this.onPanEnd.bind(this);
+    this.setContentRef = this.setContentRef.bind(this);
+    this.setCoverRef = this.setCoverRef.bind(this);
+    this.setLeftRef = this.setLeftRef.bind(this);
+    this.setRightRef = this.setRightRef.bind(this);
 
     this.openedLeft = false;
     this.openedRight = false;
@@ -40,7 +46,7 @@ class Swipeout extends React.Component {
 
   componentDidMount() {
     const { left, right } = this.props;
-    const width = this.refs.content.offsetWidth;
+    const width = this.content.offsetWidth;
 
     if (this.refs.cover) {
       this.refs.cover.style.width = `${width}px`;
@@ -128,6 +134,22 @@ class Swipeout extends React.Component {
     }
   }
 
+  setContentRef(el) {
+    this.content = el;
+  }
+
+  setCoverRef(el) {
+    this.cover = el;
+  }
+
+  setLeftRef(el) {
+    this.left = el;
+  }
+
+  setRightRef(el) {
+    this.right = el;
+  }
+
   handleClickContent() {
     if (this.openedLeft || this.openedRight) {
       this.close();
@@ -146,19 +168,22 @@ class Swipeout extends React.Component {
 
   // set content & actions style
   _setStyle(value) {
+    if (!this.content || !this.cover) {
+      return;
+    }
     const { left, right } = this.props;
     const limit = value > 0 ? this.btnsLeftWidth : -this.btnsRightWidth;
     const contentLeft = this._getContentEasing(value, limit);
-    this.refs.content.style.left = `${contentLeft}px`;
-    this.refs.cover.style.display = Math.abs(value) > 0 ? 'block' : 'none';
-    this.refs.cover.style.left = `${contentLeft}px`;
-    if (left.length) {
+    this.content.style.left = `${contentLeft}px`;
+    this.cover.style.display = Math.abs(value) > 0 ? 'block' : 'none';
+    this.cover.style.left = `${contentLeft}px`;
+    if (left.length && this.left) {
       const leftWidth = Math.max(Math.min(value, Math.abs(limit)), 0);
-      this.refs.left.style.width = `${leftWidth}px`;
+      this.left.style.width = `${leftWidth}px`;
     }
-    if (right.length) {
+    if (right.length && this.right) {
       const rightWidth = Math.max(Math.min(-value, Math.abs(limit)), 0);
-      this.refs.right.style.width = `${rightWidth}px`;
+      this.right.style.width = `${rightWidth}px`;
     }
   }
 
@@ -191,6 +216,7 @@ class Swipeout extends React.Component {
             <div key={i}
               className={`${prefixCls}-btn ${btn.hasOwnProperty('className') ? btn.className : ''}`}
               style={btn.style}
+              role="button"
               onClick={(e) => this.onBtnClick(e, btn)}
             >
               {btn.button ? btn.button :
@@ -216,26 +242,26 @@ class Swipeout extends React.Component {
       'onOpen',
       'onClose',
     ]);
-
     return (left.length || right.length) ? (
       <div className={`${prefixCls}`} {...divProps}>
         {/* 保证 body touchStart 后不触发 pan */}
-        <div className={`${prefixCls}-cover`} ref="cover" onClick={this.handleClickContent} />
-        { this.renderButtons(left, 'left') }
-        { this.renderButtons(right, 'right') }
+        <div className={`${prefixCls}-cover`} ref={this.setCoverRef} onClick={this.handleClickContent} />
+        { this.renderButtons(left, this.setLeftRef) }
+        { this.renderButtons(right, this.setRightRef) }
         <Hammer
           direction="DIRECTION_HORIZONTAL"
           onPanStart={this.onPanStart}
           onPan={this.onPan}
           onPanEnd={this.onPanEnd}
+          ref={this.setContentRef}
         >
-          <div className={`${prefixCls}-content`} ref="content">
+          <div className={`${prefixCls}-content`}>
             {children}
           </div>
         </Hammer>
       </div>
     ) : (
-      <div ref="content" {...divProps}>{children}</div>
+      <div ref={this.setContentRef} {...divProps}>{children}</div>
     );
   }
 }

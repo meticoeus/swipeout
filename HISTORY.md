@@ -1,5 +1,13 @@
 # History
 
+# 1.3.1
+
+- update react-native-swipeout version
+
+# 1.2.7
+
+- new: role="button"
+
 # 1.2.6
 
 - new: support `className` for button;
